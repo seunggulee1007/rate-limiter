@@ -4,5 +4,5 @@ spring:
 
 rate-limiter:
   enabled: true
-  cache-to-use: redis-redisson
+  cache-to-use: redis_redisson
   rate-type: token_bucket

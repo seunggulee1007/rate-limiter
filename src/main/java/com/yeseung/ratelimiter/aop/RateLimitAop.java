@@ -1,10 +1,14 @@
 package com.yeseung.ratelimiter.aop;
 
 import com.yeseung.ratelimiter.annotations.RateLimiting;
+import com.yeseung.ratelimiter.properties.LateLimitingProperties;
+import com.yeseung.ratelimiter.repository.LockRepository;
+import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.redisson.api.RLock;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
@@ -13,11 +17,18 @@ import java.lang.reflect.Method;
 
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class RateLimitAop {
+
+    private final LateLimitingProperties lateLimitingProperties;
+    private final LockRepository lockRepository;
 
     @Around("@annotation(com.yeseung.ratelimiter.annotations.RateLimiting)")
     public Object rateLimit(ProceedingJoinPoint joinPoint) throws Throwable {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        if (!lateLimitingProperties.isEnabled()) {
+            return joinPoint.proceed();
+        }
+        MethodSignature signature = (MethodSignature)joinPoint.getSignature();
         Method method = signature.getMethod();
         RateLimiting rateLimiting = method.getAnnotation(RateLimiting.class);
         if (rateLimiting == null) {
@@ -38,9 +49,16 @@ public class RateLimitAop {
         String spelExpression = rateLimiting.cacheKey();
         Object cacheKeyValue = parser.parseExpression(spelExpression).getValue(context, Object.class);
 
-        System.err.println(cacheKeyValue);
-
-        return joinPoint.proceed();
+        RLock lock = lockRepository.lock(cacheKeyValue.toString());
+        try {
+            boolean lockable = lock.tryLock(rateLimiting.waitTime(), rateLimiting.leaseTime(), rateLimiting.timeUnit());
+            if (!lockable) {
+                throw new RuntimeException("Lock 획득 실패했습니다.");
+            }
+            return joinPoint.proceed();
+        } finally {
+            lockRepository.unlock();
+        }
     }
 
 }
