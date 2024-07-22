@@ -1,0 +1,34 @@
+package com.yeseung.ratelimiter.container;
+
+import org.junit.ClassRule;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
+
+public class RedisTestContainer extends PostgreTestContainerInitializer {
+
+    private static final String DOCKER_REDIS_IMAGE = "redis:6-alpine";
+
+    @ClassRule
+    public static final GenericContainer<?> REDIS_CONTAINER;
+
+    static {
+
+        REDIS_CONTAINER = new GenericContainer<>(DOCKER_REDIS_IMAGE)
+            .withExposedPorts(6379)
+            .withReuse(true);
+
+        REDIS_CONTAINER.start();
+    }
+
+    // 동적 설정값 매핑
+    @DynamicPropertySource
+    public static void overrideProps(DynamicPropertyRegistry registry) {
+
+        // redis
+        registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);
+        registry.add("spring.data.redis.port", () -> REDIS_CONTAINER.getMappedPort(6379));
+
+    }
+
+}

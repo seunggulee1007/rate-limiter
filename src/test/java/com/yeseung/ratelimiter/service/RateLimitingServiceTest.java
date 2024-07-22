@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 class RateLimitingServiceTest {
 
@@ -16,12 +14,15 @@ class RateLimitingServiceTest {
 
     @Test
     @DisplayName("어노테이션 테스트")
-    void testRateLimitingAnnotation () {
+    void testRateLimitingAnnotation() {
         // given
-        CarInfo carInfo = new CarInfo("1234", "KIA","1234");
+        CarInfo carInfo = new CarInfo("1234", "KIA", "1234");
         // when
-        rateLimitingService.rateLimitingService(carInfo);
+        for (int i = 0; i < 100; i++) {
+            rateLimitingService.rateLimitingService(carInfo);
+        }
         // then
 
     }
+
 }
