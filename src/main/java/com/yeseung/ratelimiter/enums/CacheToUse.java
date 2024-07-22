@@ -3,6 +3,6 @@ package com.yeseung.ratelimiter.enums;
 public enum CacheToUse {
 
     REDIS_REDISSON,
-    DEFAULT
+    CONCURRENT_HASH_MAP
 
 }

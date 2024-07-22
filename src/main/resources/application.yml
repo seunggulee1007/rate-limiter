@@ -1,8 +1,30 @@
 spring:
   application:
     name: rate-limiter
+  data:
+    redis:
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1
+          time-between-eviction-runs: 300
+          enabled: true
+      host: 127.0.0.1
+      port: 6379
+      client-type: lettuce
 
 rate-limiter:
   enabled: true
   cache-to-use: redis_redisson
   rate-type: token_bucket
+
+redisson:
+  address: redis://localhost:6379
+
+token-bucket:
+  capacity: 10
+  rate: 1
+  rate-unit: seconds
+

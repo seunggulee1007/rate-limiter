@@ -4,17 +4,16 @@ import com.yeseung.ratelimiter.annotations.RateLimiting;
 import com.yeseung.ratelimiter.properties.LateLimitingProperties;
 import com.yeseung.ratelimiter.repository.LockRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.redisson.api.RLock;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
+@Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
@@ -35,28 +34,25 @@ public class RateLimitAop {
             // 어노테이션이 없는 경우 처리하지 않음
             return joinPoint.proceed();
         }
-        Object[] args = joinPoint.getArgs();
-        String[] parameterNames = signature.getParameterNames();
-        // SpEL 파서와 컨텍스트를 생성합니다.
-        SpelExpressionParser parser = new SpelExpressionParser();
-        StandardEvaluationContext context = new StandardEvaluationContext();
-        // 메서드 파라미터를 컨텍스트에 추가합니다.
-        for (int i = 0; i < parameterNames.length; i++) {
-            context.setVariable(parameterNames[i], args[i]);
-        }
+        String lockKey =
+            method.getName() + CustomSpringELParser.getDynamicValue(signature.getParameterNames(),
+                                                                    joinPoint.getArgs(),
+                                                                    rateLimiting.cacheKey());
 
-        // SpEL 표현식을 평가하여 값을 가져옵니다.
-        String spelExpression = rateLimiting.cacheKey();
-        Object cacheKeyValue = parser.parseExpression(spelExpression).getValue(context, Object.class);
-
-        RLock lock = lockRepository.lock(cacheKeyValue.toString());
+        lockRepository.getLock(lockKey);
         try {
-            boolean lockable = lock.tryLock(rateLimiting.waitTime(), rateLimiting.leaseTime(), rateLimiting.timeUnit());
+            log.error("{} lock 시작", this.getClass().getName());
+            boolean lockable = lockRepository.tryLock(rateLimiting);
             if (!lockable) {
+                log.error("Lock 획득 실패={}", lockKey);
                 throw new RuntimeException("Lock 획득 실패했습니다.");
             }
             return joinPoint.proceed();
+        } catch (InterruptedException e) {
+            log.info("에러 발생 : {}", e.getMessage());
+            throw e;
         } finally {
+            log.error("{} lock 해제", this.getClass().getName());
             lockRepository.unlock();
         }
     }

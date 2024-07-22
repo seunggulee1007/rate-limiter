@@ -1,20 +1,21 @@
 package com.yeseung.ratelimiter.repository;
 
-import org.redisson.api.RLock;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Repository
-@ConditionalOnMissingBean(value = LockRepository.class)
+@ConditionalOnProperty(prefix = "rate-limiter", value = "cache-to-use", havingValue = "concurrent_hash_map")
 public class ConcurrentHashMapRepository extends LockRepository {
 
-    private final ConcurrentHashMap<String, Object> lockMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Lock> lockMap = new ConcurrentHashMap<>();
 
     @Override
-    public RLock lock(String key) {
-        return (RLock)lockMap.computeIfAbsent(key, k -> new Object());
+    public void getLock(String key) {
+        this.lock = lockMap.computeIfAbsent(key, k -> new ReentrantLock());
     }
 
 }
