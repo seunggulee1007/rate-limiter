@@ -3,6 +3,7 @@ package com.yeseung.ratelimiter.aop;
 import com.yeseung.ratelimiter.annotations.RateLimiting;
 import com.yeseung.ratelimiter.properties.LateLimitingProperties;
 import com.yeseung.ratelimiter.repository.LockRepository;
+import com.yeseung.ratelimiter.service.RateLimitHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -21,6 +22,7 @@ public class RateLimitAop {
 
     private final LateLimitingProperties lateLimitingProperties;
     private final LockRepository lockRepository;
+    private final RateLimitHandler rateLimitHandler;
 
     @Around("@annotation(com.yeseung.ratelimiter.annotations.RateLimiting)")
     public Object rateLimit(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -47,6 +49,8 @@ public class RateLimitAop {
                 log.error("Lock 획득 실패={}", lockKey);
                 throw new RuntimeException("Lock 획득 실패했습니다.");
             }
+            String cacheKey = "cache-".concat(lockKey);
+            rateLimitHandler.allowRequest(cacheKey);
             return joinPoint.proceed();
         } catch (InterruptedException e) {
             log.info("에러 발생 : {}", e.getMessage());

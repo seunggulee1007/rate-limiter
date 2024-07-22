@@ -1,12 +1,20 @@
 package com.yeseung.ratelimiter.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.yeseung.ratelimiter.properties.TokenBucketProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.io.Serializable;
 
 @Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
-public class TokenInfo {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class TokenInfo implements Serializable {
 
     private int capacity;
     private long lastRefillTimestamp;
@@ -27,6 +35,18 @@ public class TokenInfo {
     public void calculateCurrentTokens(int tokensToAdd) {
         this.currentTokens = Math.min(this.currentTokens + tokensToAdd, this.capacity);
         this.lastRefillTimestamp = System.currentTimeMillis();
+    }
+
+    public int getRemaining() {
+        return this.capacity - this.currentTokens;
+    }
+
+    public int getLimit() {
+        return this.capacity;
+    }
+
+    public int getRetryAfter() {
+        return (int)(this.lastRefillTimestamp - System.currentTimeMillis()) / 1000;
     }
 
 }

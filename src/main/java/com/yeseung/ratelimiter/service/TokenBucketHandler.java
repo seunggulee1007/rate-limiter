@@ -1,5 +1,6 @@
 package com.yeseung.ratelimiter.service;
 
+import com.yeseung.ratelimiter.advice.exceptions.RateLimitException;
 import com.yeseung.ratelimiter.domain.TokenInfo;
 import com.yeseung.ratelimiter.properties.TokenBucketProperties;
 import com.yeseung.ratelimiter.repository.RedisTokenBucketRepository;
@@ -21,12 +22,15 @@ public class TokenBucketHandler implements RateLimitHandler {
         TokenInfo tokenInfo = repository.getOrDefault(key);
         refill(key, tokenInfo);
         if (!tokenInfo.isAllowRequest()) {
-            return false;
-        } else {
-            tokenInfo.minusTokens();
-            repository.save(key, tokenInfo);
-            return true;
+            throw new RateLimitException("You have reached the limit",
+                                         tokenInfo.getRemaining(),
+                                         tokenInfo.getLimit(),
+                                         tokenInfo.getRetryAfter());
         }
+        tokenInfo.minusTokens();
+        repository.save(key, tokenInfo);
+        return true;
+
     }
 
     private void refill(String key, TokenInfo tokenInfo) {
