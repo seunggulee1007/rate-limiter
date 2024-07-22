@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 @Getter
 @ConfigurationProperties("rate-limiter")
-public class LateLimitingProperties {
+public class RateLimitingProperties {
 
     private boolean enabled;
 

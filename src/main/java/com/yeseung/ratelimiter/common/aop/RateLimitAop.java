@@ -1,9 +1,9 @@
 package com.yeseung.ratelimiter.common.aop;
 
 import com.yeseung.ratelimiter.common.annotations.RateLimiting;
-import com.yeseung.ratelimiter.common.lock.LockManager;
-import com.yeseung.ratelimiter.common.properties.LateLimitingProperties;
 import com.yeseung.ratelimiter.common.handler.RateLimitHandler;
+import com.yeseung.ratelimiter.common.lock.LockManager;
+import com.yeseung.ratelimiter.common.properties.RateLimitingProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,13 +20,13 @@ import java.lang.reflect.Method;
 @RequiredArgsConstructor
 public class RateLimitAop {
 
-    private final LateLimitingProperties lateLimitingProperties;
+    private final RateLimitingProperties rateLimitingProperties;
     private final LockManager lockManager;
     private final RateLimitHandler rateLimitHandler;
 
     @Around("@annotation(com.yeseung.ratelimiter.common.annotations.RateLimiting)")
     public Object rateLimit(ProceedingJoinPoint joinPoint) throws Throwable {
-        if (!lateLimitingProperties.isEnabled()) {
+        if (!rateLimitingProperties.isEnabled()) {
             return joinPoint.proceed();
         }
         MethodSignature signature = (MethodSignature)joinPoint.getSignature();

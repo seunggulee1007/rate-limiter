@@ -1,9 +1,18 @@
 package com.yeseung.ratelimiter.car.domain;
 
 public record CarInfo(
+
+    String userId,
+    /* 차 번호 */
     String carNo,
-    String carModel,
-    String carColor
+    /* 신청 일자 */
+    String applyDate,
+
+    /* 신청기한 시간 */
+    String applyTime,
+
+    /* 신청기한 분 */
+    String applyMinute
 ) {
 
 }
