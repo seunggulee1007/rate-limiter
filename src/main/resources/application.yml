@@ -1,6 +1,12 @@
 spring:
   application:
     name: rate-limiter
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
   data:
     redis:
       lettuce:
@@ -20,11 +26,20 @@ rate-limiter:
   cache-to-use: redis_redisson
   rate-type: token_bucket
 
-redisson:
-  address: redis://localhost:6379
 
 token-bucket:
   capacity: 10
   rate: 1
   rate-unit: seconds
 
+
+logging:
+  level:
+    root: INFO
+    org:
+      hirbernate:
+        SQL: debug
+      type:
+        descriptor:
+          sql:
+            BasicBinder: TRACE

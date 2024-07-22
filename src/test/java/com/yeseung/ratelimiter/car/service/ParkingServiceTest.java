@@ -1,34 +1,36 @@
-package com.yeseung.ratelimiter.service;
+package com.yeseung.ratelimiter.car.service;
 
-import com.yeseung.ratelimiter.car.domain.CarInfo;
+import com.yeseung.ratelimiter.car.controller.request.ParkingApplyRequest;
 import com.yeseung.ratelimiter.car.entity.CarEntity;
 import com.yeseung.ratelimiter.car.repository.ParkingRepository;
-import com.yeseung.ratelimiter.car.service.RateLimitingService;
+import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
 import com.yeseung.ratelimiter.container.RedisTestContainer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@SpringBootTest
-class RateLimitingServiceTest extends RedisTestContainer {
+import static org.assertj.core.api.Assertions.assertThat;
+
+class ParkingServiceTest extends RedisTestContainer {
 
     @Autowired
-    private RateLimitingService rateLimitingService;
+    private ParkingService parkingService;
     @Autowired
     private ParkingRepository parkingRepository;
+    @Autowired
+    private TokenBucketProperties tokenBucketProperties;
 
     @Test
-    @DisplayName("어노테이션 테스트")
-    void testRateLimitingAnnotation() throws InterruptedException {
+    @DisplayName("")
+    void lateLimitingTest() throws Exception {
         // given
         String carNo = "07로3725";
-        CarInfo carInfo = new CarInfo("seunggulee", carNo, "20240722", "10", "00");
+        ParkingApplyRequest parkingApplyRequest = new ParkingApplyRequest("seunggulee", carNo, "20240722", "10", "00");
         int threadCount = 100;
         CountDownLatch latch = new CountDownLatch(threadCount);
 
@@ -37,7 +39,7 @@ class RateLimitingServiceTest extends RedisTestContainer {
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
                 try {
-                    rateLimitingService.rateLimitingService(carInfo);
+                    parkingService.parking(parkingApplyRequest);
                 } finally {
                     latch.countDown();
                 }
@@ -46,6 +48,8 @@ class RateLimitingServiceTest extends RedisTestContainer {
         latch.await();
         // then
         List<CarEntity> allByCarNoIs = parkingRepository.findAllByCarNoIs(carNo);
+
+        assertThat(allByCarNoIs.size()).isEqualTo(tokenBucketProperties.getCapacity());
 
     }
 
