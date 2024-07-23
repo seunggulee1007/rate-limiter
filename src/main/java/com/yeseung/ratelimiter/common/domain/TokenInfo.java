@@ -19,9 +19,14 @@ public class TokenInfo implements Serializable {
     private int capacity;
     private long lastRefillTimestamp;
     private int currentTokens;
+    private int rate;
 
     public static TokenInfo create(TokenBucketProperties properties) {
-        return new TokenInfo(properties.getCapacity(), System.currentTimeMillis(), properties.getCapacity());
+
+        return new TokenInfo(properties.getCapacity(),
+                             System.currentTimeMillis(),
+                             properties.getCapacity(),
+                             properties.getRateUnit().toMillis());
     }
 
     public boolean isAllowRequest() {
@@ -38,7 +43,7 @@ public class TokenInfo implements Serializable {
     }
 
     public int getRemaining() {
-        return this.capacity - this.currentTokens;
+        return this.currentTokens;
     }
 
     public int getLimit() {
@@ -46,7 +51,7 @@ public class TokenInfo implements Serializable {
     }
 
     public int getRetryAfter() {
-        return (int)(this.lastRefillTimestamp - System.currentTimeMillis()) / 1000;
+        return (int)(System.currentTimeMillis() - this.lastRefillTimestamp) / this.rate;
     }
 
 }

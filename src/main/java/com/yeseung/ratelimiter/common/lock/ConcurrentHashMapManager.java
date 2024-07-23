@@ -8,7 +8,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Repository
-@ConditionalOnProperty(prefix = "rate-limiter", value = "cache-to-use", havingValue = "concurrent_hash_map")
+@ConditionalOnProperty(prefix = "rate-limiter", value = "lock-type", havingValue = "concurrent_hash_map")
 public class ConcurrentHashMapManager extends LockManager {
 
     private final ConcurrentHashMap<String, Lock> lockMap = new ConcurrentHashMap<>();

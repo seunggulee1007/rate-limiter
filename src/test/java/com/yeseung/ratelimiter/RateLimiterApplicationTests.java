@@ -1,13 +1,15 @@
 package com.yeseung.ratelimiter;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
+@ActiveProfiles("test")
+@TestConfiguration(proxyBeanMethods = false)
 class RateLimiterApplicationTests {
 
-    @Test
-    void contextLoads() {
+    public static void main(String[] args) {
+        SpringApplication.from(RateLimiterApplication::main).with(RateLimiterApplicationTests.class).run(args);
     }
 
 }
