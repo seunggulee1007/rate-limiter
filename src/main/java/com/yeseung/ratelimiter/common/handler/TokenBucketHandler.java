@@ -1,9 +1,9 @@
 package com.yeseung.ratelimiter.common.handler;
 
+import com.yeseung.ratelimiter.common.cache.CacheTemplate;
 import com.yeseung.ratelimiter.common.domain.TokenInfo;
 import com.yeseung.ratelimiter.common.exceptions.RateLimitException;
 import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
-import com.yeseung.ratelimiter.common.ratelimit.RedisTokenBucketRedisTemplate;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,13 +16,13 @@ import org.springframework.stereotype.Service;
 public class TokenBucketHandler implements RateLimitHandler {
 
     private static final Logger log = LoggerFactory.getLogger(TokenBucketHandler.class);
-    private final RedisTokenBucketRedisTemplate repository;
+    private final CacheTemplate cacheTemplate;
     private final TokenBucketProperties properties;
 
     @Override
     public TokenInfo allowRequest(String key) {
 
-        TokenInfo tokenInfo = repository.getOrDefault(key);
+        TokenInfo tokenInfo = cacheTemplate.getOrDefault(key);
         refill(key, tokenInfo);
         log.error("capacity :: {}, currentTokens :: {}, lastRefillTimestamp :: {}",
                   tokenInfo.getCapacity(),
@@ -36,7 +36,7 @@ public class TokenBucketHandler implements RateLimitHandler {
                                          tokenInfo.getRetryAfter());
         }
         tokenInfo.minusTokens();
-        repository.save(key, tokenInfo);
+        cacheTemplate.save(key, tokenInfo);
         return tokenInfo;
 
     }
@@ -50,7 +50,7 @@ public class TokenBucketHandler implements RateLimitHandler {
             int tokensToAdd = (int)elapsedTime / rate;
             if (tokensToAdd > 0) {
                 tokenInfo.calculateCurrentTokens(tokensToAdd);
-                repository.save(key, tokenInfo);
+                cacheTemplate.save(key, tokenInfo);
             }
         }
     }

@@ -23,8 +23,9 @@ spring:
 
 rate-limiter:
   enabled: true
-  cache-to-use: redis_redisson
+  lock-type: redis_redisson
   rate-type: token_bucket
+  cache-type: redis
 
 
 token-bucket:

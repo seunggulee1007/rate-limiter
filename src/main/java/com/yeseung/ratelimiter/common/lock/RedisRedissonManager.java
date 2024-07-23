@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "rate-limiter", value = "cache-to-use", havingValue = "redis_redisson")
+@ConditionalOnProperty(prefix = "rate-limiter", value = "lock-type", havingValue = "redis_redisson")
 public class RedisRedissonManager extends LockManager {
 
     private final RedissonClient redissonClient;
