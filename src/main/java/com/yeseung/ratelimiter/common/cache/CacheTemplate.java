@@ -1,11 +1,11 @@
 package com.yeseung.ratelimiter.common.cache;
 
-import com.yeseung.ratelimiter.common.domain.TokenInfo;
+import com.yeseung.ratelimiter.common.domain.AbstractTokenInfo;
 
 public interface CacheTemplate {
 
-    TokenInfo getOrDefault(final String key);
+    AbstractTokenInfo getOrDefault(final String key, Class<? extends AbstractTokenInfo> tokenBucketInfoClass);
 
-    void save(String key, TokenInfo tokenInfo);
+    void save(String key, AbstractTokenInfo tokenInfo);
 
 }

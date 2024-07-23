@@ -1,6 +1,6 @@
 package com.yeseung.ratelimiter.common.config;
 
-import com.yeseung.ratelimiter.common.domain.TokenInfo;
+import com.yeseung.ratelimiter.common.domain.AbstractTokenInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
@@ -18,8 +18,8 @@ public class RedisConfig {
     private final RedisProperties redisProperties;
 
     @Bean
-    public RedisTemplate<String, TokenInfo> redisTokenInfoTemplate() {
-        RedisTemplate<String, TokenInfo> redisTemplate = new RedisTemplate<>();
+    public RedisTemplate<String, AbstractTokenInfo> redisTokenInfoTemplate() {
+        RedisTemplate<String, AbstractTokenInfo> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
         redisTemplate.setKeySerializer(RedisSerializer.string());
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());

@@ -5,6 +5,7 @@ import com.yeseung.ratelimiter.car.entity.CarEntity;
 import com.yeseung.ratelimiter.car.repository.ParkingRepository;
 import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
 import com.yeseung.ratelimiter.container.RedisTestContainer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,13 @@ class ParkingServiceTest extends RedisTestContainer {
     @Autowired
     private TokenBucketProperties tokenBucketProperties;
 
+    @BeforeEach
+    public void beforeEach() {
+        parkingRepository.deleteAll();
+    }
+
     @Test
-    @DisplayName("")
+    @DisplayName("주차권 저장 테스트")
     void lateLimitingTest() throws Exception {
         // given
         String carNo = "07로3725";
@@ -35,21 +41,22 @@ class ParkingServiceTest extends RedisTestContainer {
         CountDownLatch latch = new CountDownLatch(threadCount);
 
         // when
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        for (int i = 0; i < threadCount; i++) {
-            executor.submit(() -> {
-                try {
-                    parkingService.parking(parkingApplyRequest);
-                } finally {
-                    latch.countDown();
-                }
-            });
+        try (ExecutorService executor = Executors.newFixedThreadPool(threadCount)) {
+            for (int i = 0; i < threadCount; i++) {
+                executor.submit(() -> {
+                    try {
+                        parkingService.parking(parkingApplyRequest);
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+            latch.await();
         }
-        latch.await();
         // then
         List<CarEntity> allByCarNoIs = parkingRepository.findAllByCarNoIs(carNo);
 
-        assertThat(allByCarNoIs.size()).isEqualTo(tokenBucketProperties.getCapacity());
+        assertThat(allByCarNoIs).hasSize(tokenBucketProperties.getCapacity());
 
     }
 
