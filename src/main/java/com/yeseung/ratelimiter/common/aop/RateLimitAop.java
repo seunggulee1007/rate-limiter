@@ -2,6 +2,7 @@ package com.yeseung.ratelimiter.common.aop;
 
 import com.yeseung.ratelimiter.common.annotations.RateLimiting;
 import com.yeseung.ratelimiter.common.domain.TokenInfo;
+import com.yeseung.ratelimiter.common.exceptions.LockAcquisitionFailureException;
 import com.yeseung.ratelimiter.common.handler.RateLimitHandler;
 import com.yeseung.ratelimiter.common.lock.LockManager;
 import com.yeseung.ratelimiter.common.properties.RateLimitingProperties;
@@ -51,7 +52,7 @@ public class RateLimitAop {
             boolean lockable = lockManager.tryLock(rateLimiting);
             if (!lockable) {
                 log.error("Lock 획득 실패={}", lockKey);
-                throw new RuntimeException("Lock 획득 실패했습니다.");
+                throw new LockAcquisitionFailureException("Lock 획득 실패했습니다.");
             }
             log.error("{} lock 시작", this.getClass().getName());
             String cacheKey = "cache-".concat(lockKey);
