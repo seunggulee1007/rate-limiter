@@ -1,9 +1,11 @@
 package com.yeseung.ratelimiter.common.aop;
 
 import com.yeseung.ratelimiter.common.annotations.RateLimiting;
+import com.yeseung.ratelimiter.common.domain.TokenInfo;
 import com.yeseung.ratelimiter.common.handler.RateLimitHandler;
 import com.yeseung.ratelimiter.common.lock.LockManager;
 import com.yeseung.ratelimiter.common.properties.RateLimitingProperties;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,6 +13,8 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
 
@@ -51,10 +55,16 @@ public class RateLimitAop {
             }
             log.error("{} lock 시작", this.getClass().getName());
             String cacheKey = "cache-".concat(lockKey);
-            rateLimitHandler.allowRequest(cacheKey);
+            TokenInfo tokenInfo = rateLimitHandler.allowRequest(cacheKey);
+            HttpServletResponse response = ((ServletRequestAttributes)(RequestContextHolder.currentRequestAttributes())).getResponse();
+            if (response != null) {
+                response.setIntHeader("X-Ratelimit-Remaining", tokenInfo.getRemaining());
+                response.setIntHeader("X-Ratelimit-Limit", tokenInfo.getLimit());
+                response.setIntHeader("X-Ratelimit-Retry-After", tokenInfo.getRetryAfter());
+            }
             return joinPoint.proceed();
         } catch (InterruptedException e) {
-            log.info("에러 발생 : {}", e.getMessage());
+            log.error("에러 발생 : {}", e.getMessage());
             throw e;
         } finally {
             log.error("{} lock 해제", this.getClass().getName());

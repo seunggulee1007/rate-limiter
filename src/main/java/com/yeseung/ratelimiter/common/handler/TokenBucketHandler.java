@@ -1,7 +1,7 @@
 package com.yeseung.ratelimiter.common.handler;
 
-import com.yeseung.ratelimiter.common.exceptions.RateLimitException;
 import com.yeseung.ratelimiter.common.domain.TokenInfo;
+import com.yeseung.ratelimiter.common.exceptions.RateLimitException;
 import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
 import com.yeseung.ratelimiter.common.ratelimit.RedisTokenBucketRedisTemplate;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class TokenBucketHandler implements RateLimitHandler {
     private final TokenBucketProperties properties;
 
     @Override
-    public boolean allowRequest(String key) {
+    public TokenInfo allowRequest(String key) {
 
         TokenInfo tokenInfo = repository.getOrDefault(key);
         refill(key, tokenInfo);
@@ -37,7 +37,7 @@ public class TokenBucketHandler implements RateLimitHandler {
         }
         tokenInfo.minusTokens();
         repository.save(key, tokenInfo);
-        return true;
+        return tokenInfo;
 
     }
 
