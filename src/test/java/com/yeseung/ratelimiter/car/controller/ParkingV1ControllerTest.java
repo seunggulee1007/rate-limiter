@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ParkingV1ControllerTest extends RedisTestContainer {
 
     private static final Logger log = LoggerFactory.getLogger(ParkingV1ControllerTest.class);
+    
     @Autowired
     protected MockMvc mockMvc;
     @Autowired
@@ -41,10 +42,6 @@ class ParkingV1ControllerTest extends RedisTestContainer {
         for (int i = 0; i < count; i++) {
             confirm_remaining(s, capacity - i - 1);
         }
-        log.error("s: {}", s);
-        // when
-
-        // then
 
     }
 
