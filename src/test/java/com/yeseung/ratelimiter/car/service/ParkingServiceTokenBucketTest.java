@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -17,7 +18,13 @@ import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ParkingServiceTest extends RedisTestContainer {
+@SpringBootTest(properties = {
+    "rate-limiter.enabled=true",
+    "rate-limiter.lock-type=redis_redisson",
+    "rate-limiter.rate-type=token_bucket",
+    "rate-limiter.cache-type=REDIS",
+})
+class ParkingServiceTokenBucketTest extends RedisTestContainer {
 
     @Autowired
     private ParkingService parkingService;
