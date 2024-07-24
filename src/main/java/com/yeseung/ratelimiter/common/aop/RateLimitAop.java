@@ -56,14 +56,14 @@ public class RateLimitAop {
             }
             log.error("{} lock 시작", this.getClass().getName());
             String cacheKey = "cache-".concat(lockKey);
+            
             AbstractTokenInfo tokenBucketInfo = rateLimitHandler.allowRequest(cacheKey);
+
             Object proceed = joinPoint.proceed();
-            HttpServletResponse response = ((ServletRequestAttributes)(RequestContextHolder.currentRequestAttributes())).getResponse();
-            if (response != null) {
-                response.setIntHeader("X-Ratelimit-Remaining", tokenBucketInfo.getRemaining());
-                response.setIntHeader("X-Ratelimit-Limit", tokenBucketInfo.getLimit());
-                response.setIntHeader("X-Ratelimit-Retry-After", tokenBucketInfo.getRetryAfter());
-            }
+            tokenBucketInfo.endProcess();
+
+            setResponseHeader(tokenBucketInfo);
+
             return proceed;
         } catch (InterruptedException e) {
             log.error("에러 발생 : {}", e.getMessage());
@@ -71,6 +71,15 @@ public class RateLimitAop {
         } finally {
             log.error("{} lock 해제", this.getClass().getName());
             lockManager.unlock();
+        }
+    }
+
+    private static void setResponseHeader(AbstractTokenInfo tokenBucketInfo) {
+        HttpServletResponse response = ((ServletRequestAttributes)(RequestContextHolder.currentRequestAttributes())).getResponse();
+        if (response != null) {
+            response.setIntHeader("X-Ratelimit-Remaining", tokenBucketInfo.getRemaining());
+            response.setIntHeader("X-Ratelimit-Limit", tokenBucketInfo.getLimit());
+            response.setIntHeader("X-Ratelimit-Retry-After", tokenBucketInfo.getRetryAfter());
         }
     }
 
