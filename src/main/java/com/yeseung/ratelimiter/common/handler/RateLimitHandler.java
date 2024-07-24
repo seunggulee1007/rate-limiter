@@ -1,9 +1,9 @@
 package com.yeseung.ratelimiter.common.handler;
 
-import com.yeseung.ratelimiter.common.domain.TokenInfo;
+import com.yeseung.ratelimiter.common.domain.AbstractTokenInfo;
 
 public interface RateLimitHandler {
 
-    TokenInfo allowRequest(String key);
+    AbstractTokenInfo allowRequest(String key);
 
 }

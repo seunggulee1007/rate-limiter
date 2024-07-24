@@ -1,7 +1,7 @@
 package com.yeseung.ratelimiter.common.aop;
 
 import com.yeseung.ratelimiter.common.annotations.RateLimiting;
-import com.yeseung.ratelimiter.common.domain.TokenInfo;
+import com.yeseung.ratelimiter.common.domain.AbstractTokenInfo;
 import com.yeseung.ratelimiter.common.exceptions.LockAcquisitionFailureException;
 import com.yeseung.ratelimiter.common.handler.RateLimitHandler;
 import com.yeseung.ratelimiter.common.lock.LockManager;
@@ -56,20 +56,30 @@ public class RateLimitAop {
             }
             log.error("{} lock 시작", this.getClass().getName());
             String cacheKey = "cache-".concat(lockKey);
-            TokenInfo tokenInfo = rateLimitHandler.allowRequest(cacheKey);
-            HttpServletResponse response = ((ServletRequestAttributes)(RequestContextHolder.currentRequestAttributes())).getResponse();
-            if (response != null) {
-                response.setIntHeader("X-Ratelimit-Remaining", tokenInfo.getRemaining());
-                response.setIntHeader("X-Ratelimit-Limit", tokenInfo.getLimit());
-                response.setIntHeader("X-Ratelimit-Retry-After", tokenInfo.getRetryAfter());
-            }
-            return joinPoint.proceed();
+            
+            AbstractTokenInfo tokenBucketInfo = rateLimitHandler.allowRequest(cacheKey);
+
+            Object proceed = joinPoint.proceed();
+            tokenBucketInfo.endProcess();
+
+            setResponseHeader(tokenBucketInfo);
+
+            return proceed;
         } catch (InterruptedException e) {
             log.error("에러 발생 : {}", e.getMessage());
             throw e;
         } finally {
             log.error("{} lock 해제", this.getClass().getName());
             lockManager.unlock();
+        }
+    }
+
+    private static void setResponseHeader(AbstractTokenInfo tokenBucketInfo) {
+        HttpServletResponse response = ((ServletRequestAttributes)(RequestContextHolder.currentRequestAttributes())).getResponse();
+        if (response != null) {
+            response.setIntHeader("X-Ratelimit-Remaining", tokenBucketInfo.getRemaining());
+            response.setIntHeader("X-Ratelimit-Limit", tokenBucketInfo.getLimit());
+            response.setIntHeader("X-Ratelimit-Retry-After", tokenBucketInfo.getRetryAfter());
         }
     }
 

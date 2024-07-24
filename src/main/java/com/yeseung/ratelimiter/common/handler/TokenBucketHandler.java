@@ -1,7 +1,7 @@
 package com.yeseung.ratelimiter.common.handler;
 
 import com.yeseung.ratelimiter.common.cache.CacheTemplate;
-import com.yeseung.ratelimiter.common.domain.TokenInfo;
+import com.yeseung.ratelimiter.common.domain.TokenBucketInfo;
 import com.yeseung.ratelimiter.common.exceptions.RateLimitException;
 import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
 import lombok.RequiredArgsConstructor;
@@ -20,37 +20,37 @@ public class TokenBucketHandler implements RateLimitHandler {
     private final TokenBucketProperties properties;
 
     @Override
-    public TokenInfo allowRequest(String key) {
+    public TokenBucketInfo allowRequest(String key) {
 
-        TokenInfo tokenInfo = cacheTemplate.getOrDefault(key);
-        refill(key, tokenInfo);
+        TokenBucketInfo tokenBucketInfo = (TokenBucketInfo)cacheTemplate.getOrDefault(key, TokenBucketInfo.class);
+        refill(key, tokenBucketInfo);
         log.error("capacity :: {}, currentTokens :: {}, lastRefillTimestamp :: {}",
-                  tokenInfo.getCapacity(),
-                  tokenInfo.getCurrentTokens(),
-                  tokenInfo.getLastRefillTimestamp());
-        if (!tokenInfo.isAllowRequest()) {
+                  tokenBucketInfo.getCapacity(),
+                  tokenBucketInfo.getCurrentTokens(),
+                  tokenBucketInfo.getLastRefillTimestamp());
+        if (!tokenBucketInfo.isAllowRequest()) {
             log.error("허용되지 않은 요청입니다.");
             throw new RateLimitException("You have reached the limit",
-                                         tokenInfo.getRemaining(),
-                                         tokenInfo.getLimit(),
-                                         tokenInfo.getRetryAfter());
+                                         tokenBucketInfo.getRemaining(),
+                                         tokenBucketInfo.getLimit(),
+                                         tokenBucketInfo.getRetryAfter());
         }
-        tokenInfo.minusTokens();
-        cacheTemplate.save(key, tokenInfo);
-        return tokenInfo;
+        tokenBucketInfo.minusTokens();
+        cacheTemplate.save(key, tokenBucketInfo);
+        return tokenBucketInfo;
 
     }
 
-    private void refill(String key, TokenInfo tokenInfo) {
+    private void refill(String key, TokenBucketInfo tokenBucketInfo) {
         long now = System.currentTimeMillis();
-        long lastRefillTimestamp = tokenInfo.getLastRefillTimestamp();
+        long lastRefillTimestamp = tokenBucketInfo.getLastRefillTimestamp();
         if (now > lastRefillTimestamp) {
             long elapsedTime = now - lastRefillTimestamp;
             int rate = properties.getRateUnit().toMillis();
             int tokensToAdd = (int)elapsedTime / rate;
             if (tokensToAdd > 0) {
-                tokenInfo.calculateCurrentTokens(tokensToAdd);
-                cacheTemplate.save(key, tokenInfo);
+                tokenBucketInfo.calculateCurrentTokens(tokensToAdd);
+                cacheTemplate.save(key, tokenBucketInfo);
             }
         }
     }

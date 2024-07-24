@@ -1,14 +1,12 @@
 package com.yeseung.ratelimiter.container;
 
 import org.junit.ClassRule;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 
 @ActiveProfiles("test")
-@SpringBootTest
 public class RedisTestContainer extends PostgreTestContainerInitializer {
 
     private static final String DOCKER_REDIS_IMAGE = "redis:6-alpine";

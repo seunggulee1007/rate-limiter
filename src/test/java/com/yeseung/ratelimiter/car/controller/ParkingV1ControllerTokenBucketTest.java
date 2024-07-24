@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,11 +21,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@SpringBootTest(properties = {
+    "rate-limiter.enabled=true",
+    "rate-limiter.lock-type=redis_redisson",
+    "rate-limiter.rate-type=token_bucket",
+    "rate-limiter.cache-type=REDIS",
+})
 @AutoConfigureMockMvc
-class ParkingV1ControllerTest extends RedisTestContainer {
+class ParkingV1ControllerTokenBucketTest extends RedisTestContainer {
 
-    private static final Logger log = LoggerFactory.getLogger(ParkingV1ControllerTest.class);
-    
+    private static final Logger log = LoggerFactory.getLogger(ParkingV1ControllerTokenBucketTest.class);
+
     @Autowired
     protected MockMvc mockMvc;
     @Autowired
