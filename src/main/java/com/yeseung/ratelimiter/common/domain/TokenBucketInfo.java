@@ -1,7 +1,7 @@
 package com.yeseung.ratelimiter.common.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
+import com.yeseung.ratelimiter.common.properties.BucketProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +14,7 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TokenBucketInfo extends AbstractTokenInfo implements Serializable {
 
-    public TokenBucketInfo(TokenBucketProperties properties) {
+    public TokenBucketInfo(BucketProperties properties) {
         super(properties);
     }
 

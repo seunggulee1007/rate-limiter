@@ -2,7 +2,7 @@ package com.yeseung.ratelimiter.car.controller;
 
 import com.yeseung.ratelimiter.car.controller.request.ParkingApplyRequest;
 import com.yeseung.ratelimiter.common.exceptions.RateLimitException;
-import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
+import com.yeseung.ratelimiter.common.properties.BucketProperties;
 import com.yeseung.ratelimiter.container.RedisTestContainer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ class ParkingV1ControllerTokenBucketTest extends RedisTestContainer {
     @Autowired
     protected MockMvc mockMvc;
     @Autowired
-    private TokenBucketProperties tokenBucketProperties;
+    private BucketProperties bucketProperties;
 
     @Test
     @DisplayName("주차권 신청 처리율 제한 테스트")
@@ -44,7 +44,7 @@ class ParkingV1ControllerTokenBucketTest extends RedisTestContainer {
         // given
         ParkingApplyRequest carInfo = new ParkingApplyRequest("07로3725", "seunggulee", "20240722", "10", "00");
         String s = objectMapper.writeValueAsString(carInfo);
-        int capacity = tokenBucketProperties.getCapacity();
+        int capacity = bucketProperties.getCapacity();
         int count = capacity + 2;
         for (int i = 0; i < count; i++) {
             confirm_remaining(s, capacity - i - 1);

@@ -1,6 +1,6 @@
 package com.yeseung.ratelimiter.common.domain;
 
-import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
+import com.yeseung.ratelimiter.common.properties.BucketProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,11 +13,11 @@ public class AbstractTokenInfo {
     protected int currentTokens;
     protected int rate;
 
-    public AbstractTokenInfo(TokenBucketProperties tokenBucketProperties) {
-        this.capacity = tokenBucketProperties.getCapacity();
-        this.currentTokens = tokenBucketProperties.getCapacity();
+    public AbstractTokenInfo(BucketProperties bucketProperties) {
+        this.capacity = bucketProperties.getCapacity();
+        this.currentTokens = bucketProperties.getCapacity();
         this.lastRefillTimestamp = System.currentTimeMillis();
-        this.rate = tokenBucketProperties.getRateUnit().toMillis();
+        this.rate = bucketProperties.getRateUnit().toMillis();
     }
 
     public int getRemaining() {

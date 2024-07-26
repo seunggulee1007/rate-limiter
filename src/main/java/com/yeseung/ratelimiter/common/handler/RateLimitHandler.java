@@ -6,4 +6,7 @@ public interface RateLimitHandler {
 
     AbstractTokenInfo allowRequest(String key);
 
+    default void endRequest() {
+    }
+
 }

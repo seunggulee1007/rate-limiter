@@ -1,7 +1,7 @@
 package com.yeseung.ratelimiter.common.cache;
 
 import com.yeseung.ratelimiter.common.domain.AbstractTokenInfo;
-import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
+import com.yeseung.ratelimiter.common.properties.BucketProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,14 +19,14 @@ import java.util.Optional;
 public class BucketRedisTemplate implements CacheTemplate {
 
     private final RedisTemplate<String, AbstractTokenInfo> redisTokenInfoTemplate;
-    private final TokenBucketProperties tokenBucketProperties;
+    private final BucketProperties bucketProperties;
 
     @Override
     public AbstractTokenInfo getOrDefault(final String key, Class<? extends AbstractTokenInfo> clazz) {
         return Optional.ofNullable(redisTokenInfoTemplate.opsForValue().get(key))
             .orElseGet(() -> {
                 try {
-                    return clazz.getDeclaredConstructor(TokenBucketProperties.class).newInstance(tokenBucketProperties);
+                    return clazz.getDeclaredConstructor(BucketProperties.class).newInstance(bucketProperties);
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 }

@@ -3,7 +3,7 @@ package com.yeseung.ratelimiter.common.handler;
 import com.yeseung.ratelimiter.common.cache.CacheTemplate;
 import com.yeseung.ratelimiter.common.domain.TokenBucketInfo;
 import com.yeseung.ratelimiter.common.exceptions.RateLimitException;
-import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
+import com.yeseung.ratelimiter.common.properties.BucketProperties;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +17,7 @@ public class TokenBucketHandler implements RateLimitHandler {
 
     private static final Logger log = LoggerFactory.getLogger(TokenBucketHandler.class);
     private final CacheTemplate cacheTemplate;
-    private final TokenBucketProperties properties;
+    private final BucketProperties properties;
 
     @Override
     public TokenBucketInfo allowRequest(String key) {
