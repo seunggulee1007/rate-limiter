@@ -7,10 +7,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter @Setter
 @ConfigurationProperties("token-bucket")
-public class TokenBucketProperties {
+public class BucketProperties {
 
     private int capacity;
     private int rate;
     private RateUnit rateUnit;
-
+    private FixedWindowCounter fixedWindowCounter;
+    
 }

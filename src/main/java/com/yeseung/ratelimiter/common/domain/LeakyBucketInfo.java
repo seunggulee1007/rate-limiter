@@ -1,26 +1,19 @@
 package com.yeseung.ratelimiter.common.domain;
 
-import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.ArrayDeque;
 import java.util.Deque;
 
+@Setter @NoArgsConstructor
 public class LeakyBucketInfo extends AbstractTokenInfo {
 
-    private final Deque<String> deque;
+    private Deque<LeakyBucketInfo> deque;
 
-    public LeakyBucketInfo(TokenBucketProperties tokenBucketProperties) {
-        super(tokenBucketProperties);
-        deque = new ArrayDeque<>(tokenBucketProperties.getCapacity());
-        capacity = tokenBucketProperties.getCapacity();
-    }
-
-    public boolean allowRequest() {
-        if (deque.size() == capacity) {
-            return false;
-        }
-        deque.addFirst(String.valueOf(System.currentTimeMillis()));
-        return true;
+    public static LeakyBucketInfo of(int capacity) {
+        LeakyBucketInfo leakyBucketInfo = new LeakyBucketInfo();
+        leakyBucketInfo.capacity = capacity;
+        return leakyBucketInfo;
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.yeseung.ratelimiter.car.service;
 import com.yeseung.ratelimiter.car.controller.request.ParkingApplyRequest;
 import com.yeseung.ratelimiter.car.entity.CarEntity;
 import com.yeseung.ratelimiter.car.repository.ParkingRepository;
-import com.yeseung.ratelimiter.common.properties.TokenBucketProperties;
+import com.yeseung.ratelimiter.common.properties.BucketProperties;
 import com.yeseung.ratelimiter.container.RedisTestContainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +31,7 @@ class ParkingServiceLeakyBucketTest extends RedisTestContainer {
     @Autowired
     private ParkingRepository parkingRepository;
     @Autowired
-    private TokenBucketProperties tokenBucketProperties;
+    private BucketProperties bucketProperties;
 
     @BeforeEach
     public void beforeEach() {
@@ -63,7 +63,7 @@ class ParkingServiceLeakyBucketTest extends RedisTestContainer {
         // then
         List<CarEntity> allByCarNoIs = parkingRepository.findAllByCarNoIs(carNo);
 
-        assertThat(allByCarNoIs).hasSize(tokenBucketProperties.getCapacity());
+        assertThat(allByCarNoIs).hasSize(bucketProperties.getCapacity());
 
     }
 
