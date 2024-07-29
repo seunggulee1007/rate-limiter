@@ -1,13 +1,17 @@
 package com.yeseung.ratelimiter.common.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.yeseung.ratelimiter.common.properties.BucketProperties;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FixedWindowCountInfo extends AbstractTokenInfo {
 
-    private final int windowSize;
-    private final int requestLimit;
+    private int windowSize;
+    private int requestLimit;
     private int currentCount;
 
     public FixedWindowCountInfo(BucketProperties bucketProperties) {
