@@ -32,6 +32,9 @@ token-bucket:
   capacity: 10
   rate: 1
   rate-unit: seconds
+  fixed-window-counter:
+    window-size: 60
+    request-limit: 100
 
 
 logging:
