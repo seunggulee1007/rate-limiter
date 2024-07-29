@@ -54,9 +54,9 @@ public class RateLimitAop {
                 log.error("Lock 획득 실패={}", lockKey);
                 throw new LockAcquisitionFailureException("Lock 획득 실패했습니다.");
             }
-            log.error("{} lock 시작", this.getClass().getName());
+            log.debug("{} lock 시작", this.getClass().getName());
             String cacheKey = "cache-".concat(lockKey);
-            
+
             AbstractTokenInfo tokenBucketInfo = rateLimitHandler.allowRequest(cacheKey);
 
             Object proceed = joinPoint.proceed();
@@ -69,7 +69,7 @@ public class RateLimitAop {
             log.error("에러 발생 : {}", e.getMessage());
             throw e;
         } finally {
-            log.error("{} lock 해제", this.getClass().getName());
+            log.debug("{} lock 해제", this.getClass().getName());
             lockManager.unlock();
         }
     }
